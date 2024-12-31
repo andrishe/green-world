@@ -1,43 +1,48 @@
 import { Tabs } from 'expo-router';
+import { CirclePlus, House, UserCircle, UserRound } from 'lucide-react-native';
 import React from 'react';
 import { Platform } from 'react-native';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        tabBarActiveTintColor: '#3a965f',
+        tabBarInactiveTintColor: '#66ab82',
+
+        tabBarLabelStyle: {
+          fontFamily: 'RobotoMedium',
+          fontSize: 12,
+        },
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ focused }) => (
+            <House size={24} color={focused ? '#3a965f' : '#66ab82'} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="create"
+        options={{
+          title: 'Create',
+          tabBarIcon: ({ focused }) => (
+            <CirclePlus size={24} color={focused ? '#3a965f' : '#66ab82'} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="profile"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Profile',
+          tabBarIcon: ({ focused }) => (
+            <UserRound size={24} color={focused ? '#3a965f' : '#66ab82'} />
+          ),
         }}
       />
     </Tabs>
