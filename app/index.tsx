@@ -1,9 +1,14 @@
 import CustomButton from '@/components/CustomButton';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import React from 'react';
 import { View, Image, Text } from 'react-native';
+import { useGlobalContext } from '@/context/GlobalProvider';
 
 const App = () => {
+  const { isLoading, isLoggedIn } = useGlobalContext();
+
+  if (!isLoading && isLoggedIn) return <Redirect href="/home" />;
+
   return (
     <View className="flex-1 bg-white">
       <View className="flex-1 bg-white justify-center items-center">
@@ -27,7 +32,7 @@ const App = () => {
           title="Bienvenue"
           containerStyles="bg-white"
           textStyles="text-grayBlack"
-          onPress={() => router.replace('/signIn')}
+          onPress={() => router.replace('/logIn')}
         />
       </View>
     </View>

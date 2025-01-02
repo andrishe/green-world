@@ -19,11 +19,10 @@ export const config = {
 };
 
 export const client = new Client();
-
 client
+  .setEndpoint(config.endpoint!)
   .setProject(config.projectId!)
-  .setPlatform(config.platform!)
-  .setEndpoint(config.endpoint!);
+  .setPlatform(config.platform!);
 
 export const account = new Account(client);
 export const avatars = new Avatars(client);
@@ -42,21 +41,24 @@ export const createUser = async (
       password,
       username
     );
+
     if (!newAccount) throw new Error('Failed to create user');
 
     const avatarUrl = avatars.getInitials(username);
 
+    console.log('Creating user document in database...');
     const newUser = await databases.createDocument(
-      config.userCollectionId,
       config.databaseId,
+      config.userCollectionId,
       ID.unique(),
       {
-        accountID: newAccount.$id,
+        accountId: newAccount.$id, // Correction ici
         email,
         username,
         avatar: avatarUrl,
       }
     );
+
     return newUser;
   } catch (error) {
     console.error(error);
@@ -77,17 +79,27 @@ export const signIn = async (email: string, password: string) => {
 export const getCurrentUser = async () => {
   try {
     const currentAccount = await account.get();
+
     if (!currentAccount) throw new Error('Failed to get current user');
-    const getCurrentUser = await databases.listDocuments(
+    const currentUser = await databases.listDocuments(
       config.databaseId,
       config.userCollectionId,
       [Query.equal('accountId', currentAccount.$id)]
     );
 
-    if (!getCurrentUser) throw new Error('Failed to get current user');
-    return getCurrentUser.documents[0];
+    if (!currentUser) throw new Error('Failed to get current user');
+    return currentUser.documents[0];
   } catch (error) {
     console.error(error, 'Failed to get current user');
+    throw new Error(error as any);
+  }
+};
+
+export const logout = async () => {
+  try {
+    await account.deleteSession('current');
+  } catch (error) {
+    console.error(error);
     throw new Error(error as any);
   }
 };

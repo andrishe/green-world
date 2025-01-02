@@ -1,11 +1,12 @@
-import { View, Text, Image, ScrollView } from 'react-native';
+import { View, Text, Image, ScrollView, Alert } from 'react-native';
 import React, { useState } from 'react';
 
 import { router, Link } from 'expo-router';
 import CustomField from '@/components/CustomField';
-import { Lock, Mail } from 'lucide-react-native';
+import { Lock, Mail, User } from 'lucide-react-native';
 import CustomButton from '@/components/CustomButton';
 import GoogleAuth from '@/components/GoogleAuth';
+import { createUser } from '@/lib/appwrite';
 
 const signUp = () => {
   const [form, setForm] = useState({
@@ -13,6 +14,29 @@ const signUp = () => {
     email: '',
     password: '',
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!form.email || !form.password || !form.username) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+    setIsSubmitting(true);
+
+    try {
+      await createUser(form.email, form.password, form.username);
+      router.replace('/logIn');
+      Alert.alert('Succès', 'Compte créé avec succès');
+    } catch (error) {
+      Alert.alert(
+        'Erreur',
+        (error as any).message || 'Une erreur est survenue'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
     <ScrollView className="bg-white h-full px-4">
       <View>
@@ -27,7 +51,7 @@ const signUp = () => {
         label="Nom"
         placeholder="Nom"
         value={form.username}
-        icon={<Mail size={16} color={'#66ab82'} />}
+        icon={<User size={16} color={'#66ab82'} />}
         onChangeText={(text) => setForm({ ...form, username: text })}
         labelStyle="text-base font-RobotoRegular text-grayBlack mb-2"
       />
@@ -52,7 +76,7 @@ const signUp = () => {
 
       <CustomButton
         title="Se connecter"
-        onPress={() => router.push('/signIn')}
+        onPress={handleSubmit}
         containerStyles="bg-primary mt-8"
         textStyles="text-white"
       />
@@ -60,7 +84,7 @@ const signUp = () => {
       <GoogleAuth />
 
       <Link
-        href="/signIn"
+        href="/logIn"
         className="text-gray font-RobotoRegular text-center text-lg mt-4"
       >
         <Text>Je n'ai pas de compte? </Text>

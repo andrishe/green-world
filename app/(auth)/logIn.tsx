@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView } from 'react-native';
+import { View, Text, Image, ScrollView, Alert } from 'react-native';
 import React, { useState } from 'react';
 
 import { router, Link } from 'expo-router';
@@ -6,12 +6,32 @@ import CustomField from '@/components/CustomField';
 import { Lock, Mail } from 'lucide-react-native';
 import CustomButton from '@/components/CustomButton';
 import GoogleAuth from '@/components/GoogleAuth';
+import { signIn } from '@/lib/appwrite';
 
-const signIn = () => {
+const logIn = () => {
   const [form, setForm] = useState({
     email: '',
     password: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const handleSubmit = async () => {
+    if (!form.email || !form.password) {
+      Alert.alert('Error', 'Please fill in all the fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await signIn(form.email, form.password);
+
+      router.replace('/home');
+    } catch (error) {
+      Alert.alert('Error', (error as any).message || 'Something went wrong');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
     <ScrollView className="bg-white h-full px-4">
       <View>
@@ -43,7 +63,7 @@ const signIn = () => {
 
       <CustomButton
         title="Se connecter"
-        onPress={() => router.push('/home')}
+        onPress={handleSubmit}
         containerStyles="bg-primary mt-8"
         textStyles="text-white"
       />
@@ -61,4 +81,4 @@ const signIn = () => {
   );
 };
 
-export default signIn;
+export default logIn;
