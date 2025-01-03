@@ -8,16 +8,28 @@ import {
   Pressable,
   FlatList,
 } from 'react-native';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '@/context/GlobalProvider';
-import { logout } from '@/lib/appwrite';
+import { logout, getAllPosts, deleteFileFromDatabase } from '@/lib/appwrite';
 import { router } from 'expo-router';
 import { LogOut } from 'lucide-react-native';
-import { posts } from '@/data/data';
+
 import Card from '@/components/Card';
+import CustomSearch from '@/components/CustomSearch';
+import useFetchData from '@/hooks/useFetchData';
 
 export default function HomeScreen() {
   const { user } = useGlobalContext();
+  const { data: posts, refresh } = useFetchData(getAllPosts);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  };
 
   const handleLogout = async () => {
     try {
@@ -30,20 +42,23 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView className="bg-white h-full px-4  ">
+    <SafeAreaView className="bg-white h-full">
       <FlatList
         data={posts}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.$id}
         renderItem={({ item }) => <Card dataPost={item} />}
         ListHeaderComponent={() => (
-          <View className="flex-row justify-between items-start mb-10 ">
-            <View>
-              <Text>Bonjour</Text>
-              <Text>{user?.username}</Text>
+          <View className="my-6 space-y-6 px-4 ">
+            <View className="mb-10">
+              <Text className="font-RobotoRegular text-sm text-grayBlack ">
+                Bonjour{' '}
+                <Text className="text-base font-RobotoMedium text-gray ">
+                  {user?.username} 👋
+                </Text>
+              </Text>
             </View>
-            <Pressable onPress={handleLogout}>
-              <LogOut size={24} />
-            </Pressable>
+
+            <CustomSearch />
           </View>
         )}
         showsVerticalScrollIndicator={false}

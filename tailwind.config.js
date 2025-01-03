@@ -18,6 +18,7 @@ module.exports = {
         grayWhite: '#ebebeb',
         grayBlack: '#37474f',
         success: '#38A169',
+        grayLight: '#f3f4f6',
       },
     },
   },

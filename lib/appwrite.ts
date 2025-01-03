@@ -52,7 +52,7 @@ export const createUser = async (
       config.userCollectionId,
       ID.unique(),
       {
-        accountId: newAccount.$id, // Correction ici
+        accountId: newAccount.$id,
         email,
         username,
         avatar: avatarUrl,
@@ -91,6 +91,44 @@ export const getCurrentUser = async () => {
     return currentUser.documents[0];
   } catch (error) {
     console.error(error, 'Failed to get current user');
+    throw new Error(error as any);
+  }
+};
+
+export const getAllPosts = async () => {
+  try {
+    const posts = await databases.listDocuments(
+      config.databaseId,
+      config.postCollectionId,
+      [Query.orderDesc('$createdAt')]
+    );
+
+    if (!posts) throw new Error('No posts found');
+    return posts.documents;
+  } catch (error) {
+    console.error(error);
+    throw new Error(error as any);
+  }
+};
+
+export const deleteFileFromDatabase = async (
+  collectionId: string,
+  documentId: string,
+  fileId: string
+) => {
+  try {
+    await storage.deleteFile(config.storageId, fileId);
+    console.log(`Fichier avec l'ID ${fileId} supprimé du stockage.`);
+
+    await databases.deleteDocument(config.databaseId, collectionId, documentId);
+    console.log(
+      `Document avec l'ID ${documentId} supprimé de la base de données.`
+    );
+  } catch (error) {
+    console.error(
+      'Erreur lors de la suppression du fichier ou du document :',
+      error
+    );
     throw new Error(error as any);
   }
 };

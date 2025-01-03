@@ -1,60 +1,80 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import React from 'react';
-import { CircleX } from 'lucide-react-native';
+import { CircleX, MapPin, NotebookText } from 'lucide-react-native';
+import { deleteFileFromDatabase } from '@/lib/appwrite';
 
 type CardProps = {
   dataPost: {
-    id: number;
     title: string;
+    image: string;
+    address: string;
     description: string;
-    image: any; // Change to any to accommodate the imported image
-    creator: string;
-    avatar: string;
+    creator: {
+      username: string;
+      avatar: string;
+    };
   };
 };
 
 const Card = ({ dataPost }: CardProps) => {
+  const handleDelete = async () => {
+    try {
+      await deleteFileFromDatabase('collectionId', 'documentId', 'fileId');
+      Alert.alert('Success', 'File has been deleted');
+    } catch (error) {
+      Alert.alert('Error', (error as any).message || 'Failed to delete file');
+    }
+  };
   return (
-    <View
-      className="flex-col items-center px-4 py-4 mb-10 rounded-xl border border-gray "
-      style={styles.container}
-    >
-      <View className="flex-row items-start gap-3">
-        <View className="justify-center items-center flex-row flex-1">
+    <View className="flex-col items-center px-4 py-4 mb-10 border-b border-grayWhite">
+      <View className="flex-row items-start gap-3 w-full">
+        <View className="flex-row items-center flex-1">
           <View className="w-[40px] h-[40px] rounded-full border border-primary justify-center items-center p-0.5">
             <Image
-              source={{ uri: dataPost.avatar }}
+              source={{ uri: dataPost.creator.avatar }}
               resizeMode="contain"
               className="w-10 h-10 rounded-full"
             />
           </View>
 
-          <View className="justify-center flex-1 ml-3 gap-y-1">
+          <View className="ml-3">
+            <Text className="text-lg font-RobotoBold text-grayBlack">
+              {dataPost.title}
+            </Text>
             <Text className="text-sm font-RobotoRegular text-grayBlack">
-              {dataPost.creator}
+              {dataPost.creator.username}
             </Text>
           </View>
         </View>
 
-        <TouchableOpacity className="justify-center items-center">
-          <CircleX size={30} color="#ef4444" />
+        <TouchableOpacity
+          className="justify-center items-center"
+          onPress={handleDelete}
+        >
+          <CircleX size={28} color="#66ab82" />
         </TouchableOpacity>
       </View>
 
-      <View className="mt-4">
-        <Text className="text-lg font-RobotoBold text-grayBlack">
-          {dataPost.title}
-        </Text>
-        <Text className="text-sm font-RobotoRegular text-gray">
-          {dataPost.description}
-        </Text>
+      <View className="mt-4 w-full">
+        <View className="flex-row items-center gap-2 mt-2">
+          <MapPin size={16} color="#37474f" />
+          <Text className="text-base font-RobotoRegular text-gray">
+            {dataPost.address}
+          </Text>
+        </View>
+        <View className="flex-row items-start gap-2 mt-2">
+          <NotebookText size={16} color="#37474f" />
+          <Text className="text-base font-RobotoRegular text-gray">
+            {dataPost.description}
+          </Text>
+        </View>
       </View>
 
-      <View>
+      <View className="w-full items-center mt-4">
         <Image
-          source={dataPost.image}
-          resizeMode="contain"
-          className="w-[450px] h-[240px] mt-4 rounded-lg"
+          source={{ uri: dataPost.image }}
+          resizeMode="cover"
+          className="w-full h-[240px] rounded-xl "
         />
       </View>
     </View>
@@ -62,16 +82,3 @@ const Card = ({ dataPost }: CardProps) => {
 };
 
 export default Card;
-
-const styles = StyleSheet.create({
-  container: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-});
