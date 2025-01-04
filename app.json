@@ -4,7 +4,7 @@
     "slug": "green_world",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/greenworld.svg",
+    "icon": "./assets/images/ecolo.png",
     "scheme": "greenWorld",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,21 +13,21 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/greenworld.svg",
+        "foregroundImage": "./assets/images/ecolo.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/greenworld.svg"
+      "favicon": "./assets/images/ecolo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/greenworld.svg",
+          "image": "./assets/images/ecolo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

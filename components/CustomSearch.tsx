@@ -20,7 +20,7 @@ const CustomSearch = () => {
       }`}
     >
       <TextInput
-        placeholder="Search"
+        placeholder="Rechercher"
         placeholderTextColor="#455a64"
         value={''}
         onFocus={() => setIsFocused(true)}

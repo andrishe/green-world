@@ -1,7 +1,12 @@
 import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import React from 'react';
-import { CircleX, MapPin, NotebookText } from 'lucide-react-native';
+import { X, MapPin, NotebookText, NotebookPen } from 'lucide-react-native';
 import { deleteFileFromDatabase } from '@/lib/appwrite';
+
+type Creator = {
+  username: string;
+  avatar: string;
+};
 
 type CardProps = {
   dataPost: {
@@ -9,10 +14,7 @@ type CardProps = {
     image: string;
     address: string;
     description: string;
-    creator: {
-      username: string;
-      avatar: string;
-    };
+    creator: Creator;
   };
 };
 
@@ -47,12 +49,18 @@ const Card = ({ dataPost }: CardProps) => {
           </View>
         </View>
 
-        <TouchableOpacity
-          className="justify-center items-center"
-          onPress={handleDelete}
-        >
-          <CircleX size={28} color="#66ab82" />
-        </TouchableOpacity>
+        <View>
+          <TouchableOpacity
+            className="justify-center items-center "
+            onPress={handleDelete}
+          >
+            <X size={22} color="#455a64" />
+          </TouchableOpacity>
+
+          <TouchableOpacity className=" mt-2">
+            <NotebookPen size={20} color="#455a64" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View className="mt-4 w-full">
