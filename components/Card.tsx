@@ -1,7 +1,7 @@
 import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import React from 'react';
 import { X, MapPin, NotebookText, NotebookPen } from 'lucide-react-native';
-import { deleteFileFromDatabase } from '@/lib/appwrite';
+import { deleteSelectedPost } from '@/lib/appwrite';
 
 type Creator = {
   username: string;
@@ -19,14 +19,15 @@ type CardProps = {
 };
 
 const Card = ({ dataPost }: CardProps) => {
-  const handleDelete = async () => {
+  const handleDelete = async (documentId: any) => {
     try {
-      await deleteFileFromDatabase('collectionId', 'documentId', 'fileId');
-      Alert.alert('Success', 'File has been deleted');
+      await deleteSelectedPost(documentId);
+      Alert.alert('Success', 'Post has been deleted');
     } catch (error) {
-      Alert.alert('Error', (error as any).message || 'Failed to delete file');
+      Alert.alert('Error', (error as any).message || 'Failed to delete post');
     }
   };
+
   return (
     <View className="flex-col items-center px-4 py-4 mb-10 border-b border-grayWhite">
       <View className="flex-row items-start gap-3 w-full">
@@ -50,11 +51,8 @@ const Card = ({ dataPost }: CardProps) => {
         </View>
 
         <View>
-          <TouchableOpacity
-            className="justify-center items-center "
-            onPress={handleDelete}
-          >
-            <X size={22} color="#455a64" />
+          <TouchableOpacity onPress={() => handleDelete(dataPost)}>
+            <X size={20} color="#455a64" />
           </TouchableOpacity>
 
           <TouchableOpacity className=" mt-2">

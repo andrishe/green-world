@@ -25,7 +25,7 @@ const Create = () => {
     image: { uri: string } | null;
     description: string;
     address: string;
-    userId?: string;
+    creator?: string;
   }>({
     title: '',
     image: null,
@@ -35,7 +35,7 @@ const Create = () => {
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images', 'videos'],
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -55,12 +55,10 @@ const Create = () => {
     setUploading(true);
 
     try {
-      console.log('Starting upload with image:', form.image); // Add this debug log
-      await createPost({ ...form, userId: user.$id });
+      await createPost({ ...form, creator: user.$id });
       Alert.alert('Success', 'Depot sauvage signalé avec succès');
       router.push('/home');
     } catch (error: any) {
-      console.error('Detailed upload error:', error); // Add this debug log
       Alert.alert('Error', error.message || "Erreur lors de l'envoi");
     } finally {
       setUploading(false);

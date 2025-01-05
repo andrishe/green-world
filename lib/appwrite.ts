@@ -10,25 +10,27 @@ import {
 
 export const config = {
   platform: 'com.sima.greenworld',
-  endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
-  projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
-  databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID || '',
-  userCollectionId: process.env.EXPO_PUBLIC_APPWRITE_USER_ID || '',
-  postCollectionId: process.env.EXPO_PUBLIC_APPWRITE_POST_ID || '',
-  storageId: process.env.EXPO_PUBLIC_APPWRITE_STORAGE_ID || '',
+  endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!,
+  projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!,
+  databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!,
+  userCollectionId: process.env.EXPO_PUBLIC_APPWRITE_USER_ID!,
+  postCollectionId: process.env.EXPO_PUBLIC_APPWRITE_POST_ID!,
+  storageId: process.env.EXPO_PUBLIC_APPWRITE_STORAGE_ID!,
 };
 
+// Initialisation du client Appwrite
 export const client = new Client();
 client
-  .setEndpoint(config.endpoint!)
-  .setProject(config.projectId!)
-  .setPlatform(config.platform!);
+  .setEndpoint(config.endpoint)
+  .setProject(config.projectId)
+  .setPlatform(config.platform);
 
 export const account = new Account(client);
 export const avatars = new Avatars(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
 
+// Fonction pour créer un utilisateur
 export const createUser = async (
   email: string,
   password: string,
@@ -42,11 +44,8 @@ export const createUser = async (
       username
     );
 
-    if (!newAccount) throw new Error('Failed to create user');
-
     const avatarUrl = avatars.getInitials(username);
 
-    console.log('Creating user document in database...');
     const newUser = await databases.createDocument(
       config.databaseId,
       config.userCollectionId,
@@ -60,41 +59,40 @@ export const createUser = async (
     );
 
     return newUser;
-  } catch (error) {
-    console.error(error);
-    throw new Error(error as any);
+  } catch (error: any) {
+    console.error('Error creating user:', error);
+    throw new Error('Unable to create user');
   }
 };
 
+// Fonction pour se connecter
 export const signIn = async (email: string, password: string) => {
   try {
-    const session = await account.createEmailPasswordSession(email, password);
-    return session;
-  } catch (error) {
-    console.error(error);
-    throw new Error(error as any);
+    return await account.createEmailPasswordSession(email, password);
+  } catch (error: any) {
+    console.error('Error during sign-in:', error);
+    throw new Error('Failed to sign in');
   }
 };
 
+// Récupération de l'utilisateur actuel
 export const getCurrentUser = async () => {
   try {
     const currentAccount = await account.get();
-
-    if (!currentAccount) throw new Error('Failed to get current user');
     const currentUser = await databases.listDocuments(
       config.databaseId,
       config.userCollectionId,
       [Query.equal('accountId', currentAccount.$id)]
     );
 
-    if (!currentUser) throw new Error('Failed to get current user');
     return currentUser.documents[0];
-  } catch (error) {
-    console.error(error, 'Failed to get current user');
-    throw new Error(error as any);
+  } catch (error: any) {
+    console.error('Error fetching current user:', error);
+    throw new Error('No user found');
   }
 };
 
+// Fonction pour récupérer tous les posts
 export const getAllPosts = async () => {
   try {
     const posts = await databases.listDocuments(
@@ -103,14 +101,14 @@ export const getAllPosts = async () => {
       [Query.orderDesc('$createdAt')]
     );
 
-    if (!posts) throw new Error('No posts found');
     return posts.documents;
-  } catch (error) {
-    console.error(error);
-    throw new Error(error as any);
+  } catch (error: any) {
+    console.error('Error fetching posts:', error);
+    throw new Error('No posts found');
   }
 };
 
+// Fonction pour récupérer les derniers posts
 export const getLatestPosts = async () => {
   try {
     const posts = await databases.listDocuments(
@@ -119,152 +117,122 @@ export const getLatestPosts = async () => {
       [Query.orderDesc('$createdAt'), Query.limit(5)]
     );
 
-    if (!posts) throw new Error('No posts found');
     return posts.documents;
-  } catch (error) {
-    console.error(error);
-    throw new Error(error as any);
+  } catch (error: any) {
+    console.error('Error fetching latest posts:', error);
+    throw new Error('No posts found');
   }
 };
 
-export const deleteFileFromDatabase = async (
-  collectionId: string,
-  documentId: string,
-  fileId: string
-) => {
+// Suppression d'un fichier et d'un document associés
+export const deleteSelectedPost = async (documentId: string) => {
   try {
-    await storage.deleteFile(config.storageId, fileId);
-    console.log(`Fichier avec l'ID ${fileId} supprimé du stockage.`);
+    const response = await databases.deleteDocument(
+      config.databaseId,
+      config.postCollectionId,
+      documentId
+    );
 
-    await databases.deleteDocument(config.databaseId, collectionId, documentId);
-    console.log(
-      `Document avec l'ID ${documentId} supprimé de la base de données.`
-    );
-  } catch (error) {
-    console.error(
-      'Erreur lors de la suppression du fichier ou du document :',
-      error
-    );
-    throw new Error(error as any);
+    // Vérifier la réponse de la suppression
+    if (response) {
+      console.log('Post deleted successfully');
+      return true;
+    } else {
+      throw new Error('Failed to delete post, no response from Appwrite');
+    }
+  } catch (error: any) {
+    console.error('Error deleting post:', error.message || error);
+    throw new Error('Failed to delete post');
   }
 };
 
+// Fonction pour déconnecter un utilisateur
 export const logout = async () => {
   try {
     await account.deleteSession('current');
-  } catch (error) {
-    console.error(error);
-    throw new Error(error as any);
+  } catch (error: any) {
+    console.error('Error during logout:', error);
+    throw new Error('Failed to logout');
   }
 };
 
-export const getFilePreView = async (
-  fileId: string,
-  type: string
-): Promise<string> => {
-  let fileUrl = '';
+// Fonction pour prévisualiser un fichier
+export const getFilePreview = async (fileId: string): Promise<string> => {
   try {
-    fileUrl = (await storage.getFileView(config.storageId, fileId)).toString();
-    return fileUrl;
-  } catch (error) {
+    return (await storage.getFileView(config.storageId, fileId)).toString();
+  } catch (error: any) {
     console.error('Error fetching file preview:', error);
     throw new Error('Unable to fetch file preview');
   }
 };
 
+// Téléchargement d'un fichier
 export const uploadFile = async (file: any): Promise<string> => {
   if (!file) throw new Error('No file provided');
 
   try {
-    // Convert image URI to Blob
     const response = await fetch(file.uri);
     const blob = await response.blob();
+    const fileName = file.uri.split('/').pop() || 'file.jpg';
 
-    // Create file name from URI
-    const fileName = file.uri.split('/').pop() || 'image.jpg';
-
-    // Create a File object from the Blob
-    const fileObject = {
-      name: fileName,
-      type: blob.type || 'image/jpeg',
-      size: blob.size,
-      uri: file.uri,
-    };
-
-    // Upload to Appwrite
+    // Création du fichier dans Appwrite
     const uploadedFile = await storage.createFile(
       config.storageId,
       ID.unique(),
-      fileObject
+      {
+        name: fileName,
+        type: blob.type,
+        size: blob.size,
+        uri: file.uri,
+      }
     );
 
-    if (!uploadedFile || !uploadedFile.$id) {
-      throw new Error('File upload failed');
-    }
-
-    // Get file view URL
-    const fileUrl = storage.getFileView(config.storageId, uploadedFile.$id);
-
-    return fileUrl.href;
-  } catch (error) {
-    console.error('Upload error:', error);
-    throw error;
+    return (
+      await storage.getFileView(config.storageId, uploadedFile.$id)
+    ).toString();
+  } catch (error: any) {
+    console.error('Upload error:', error.message, error);
+    throw new Error('Failed to upload file');
   }
 };
 
-// Update the type to match your actual collection schema
+// Création d'un post
+
 type PostForm = {
   title: string;
   description: string;
   address: string;
   image: any;
-  userId?: string;
+  creator?: string;
 };
-
-interface PostDocument {
-  title: string;
-  description: string;
-  address: string;
-  image: string;
-  userId: string; // Changed from user_id to userId
-  email: string;
-}
-
 export const createPost = async (form: PostForm): Promise<any> => {
   try {
-    if (!form.image) {
-      throw new Error('No image provided for post');
-    }
-
-    // Upload the image first
+    // Upload de l'image
     const imageUrl = await uploadFile(form.image);
 
-    // Get the current user
+    // Récupération de l'utilisateur actuel
     const currentUser = await getCurrentUser();
     if (!currentUser) {
-      throw new Error('Could not get user information');
+      throw new Error('Current user not found');
     }
 
-    // Create the post document
-    const postData: PostDocument = {
-      title: form.title,
-      description: form.description,
-      address: form.address,
-      image: imageUrl,
-      userId: currentUser.$id,
-      email: currentUser.email,
-    };
-
+    // Création du document dans Appwrite
     const newPost = await databases.createDocument(
       config.databaseId,
       config.postCollectionId,
       ID.unique(),
-      postData
+      {
+        title: form.title,
+        description: form.description,
+        address: form.address,
+        image: imageUrl,
+        creator: currentUser.$id,
+      }
     );
 
     return newPost;
   } catch (error: any) {
-    console.error('Post creation error:', error);
-    throw error;
+    console.error('Error creating post:', error.message, error);
+    throw new Error('Failed to create post');
   }
 };
