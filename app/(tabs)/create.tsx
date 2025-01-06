@@ -7,7 +7,7 @@ import {
   Alert,
 } from 'react-native';
 import { Camera } from 'lucide-react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomField from '@/components/CustomField';
 import CustomButton from '@/components/CustomButton';

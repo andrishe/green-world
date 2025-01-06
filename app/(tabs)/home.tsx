@@ -54,6 +54,7 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           <Card
             dataPost={{
+              $id: item.$id,
               title: item.title,
               image: item.image,
               address: item.address,

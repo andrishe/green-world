@@ -125,24 +125,75 @@ export const getLatestPosts = async () => {
 };
 
 // Suppression d'un fichier et d'un document associés
-export const deleteSelectedPost = async (documentId: string) => {
+// Type for Post document
+
+type Creator = {
+  username: string;
+  avatar: string;
+};
+type Post = {
+  $id: string;
+  title: string;
+  description: string;
+  address: string;
+  image: string;
+  creator: Creator;
+};
+
+export const deleteSelectedPost = async (post: Post) => {
   try {
-    const response = await databases.deleteDocument(
+    // Vérification que le post existe et a un ID
+    if (!post || !post.$id) {
+      console.error('Invalid post object:', post);
+      throw new Error('Invalid post data: missing post ID');
+    }
+
+    // Supprimer le document de la base de données
+    await databases.deleteDocument(
       config.databaseId,
       config.postCollectionId,
-      documentId
+      post.$id
     );
 
-    // Vérifier la réponse de la suppression
-    if (response) {
-      console.log('Post deleted successfully');
-      return true;
-    } else {
-      throw new Error('Failed to delete post, no response from Appwrite');
+    // Si l'image est une URL Appwrite Storage, extraire l'ID du fichier et le supprimer
+    if (post.image && post.image.includes('appwrite.io')) {
+      try {
+        const fileId = post.image.split('/files/')[1].split('/')[0];
+        await storage.deleteFile(config.storageId, fileId);
+      } catch (imageError) {
+        console.warn('Could not delete associated image:', imageError);
+        // On continue même si la suppression de l'image échoue
+      }
     }
+
+    return true;
   } catch (error: any) {
     console.error('Error deleting post:', error.message || error);
-    throw new Error('Failed to delete post');
+    throw new Error(`Failed to delete post: ${error.message}`);
+  }
+};
+
+// Fonction pour mettre à jour un document dans Appwrite
+export const updatePost = async (
+  postId: string,
+  data: object
+): Promise<any> => {
+  try {
+    const updatedPost = await databases.updateDocument(
+      config.databaseId,
+      config.postCollectionId,
+      postId,
+      data
+    );
+
+    console.log('Post mis à jour avec succès :', updatedPost);
+    return updatedPost;
+  } catch (error: any) {
+    console.error(
+      'Erreur lors de la mise à jour du post :',
+      error.message || error
+    );
+    throw new Error('Impossible de mettre à jour le post');
   }
 };
 
