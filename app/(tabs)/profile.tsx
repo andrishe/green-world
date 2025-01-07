@@ -34,6 +34,7 @@ export default function Profile() {
         renderItem={({ item }) => (
           <Card
             dataPost={{
+              $id: item.$id,
               title: item.title,
               image: item.image,
               address: item.address,
@@ -79,14 +80,9 @@ export default function Profile() {
               </View>
             </View>
 
-            <View className="flex-row items-center gap-1 px-4 mb-6">
-              <View>
-                <FileWarning size={20} color="#455a64" />
-              </View>
-              <Text className="font-RobotoBold text-2xl text-grayBlack  ">
-                Mes signalements
-              </Text>
-            </View>
+            <Text className="font-RobotoBold text-2xl text-grayBlack px-4 mb-6 ">
+              Mes signalements
+            </Text>
           </View>
         )}
         showsVerticalScrollIndicator={false}

@@ -124,6 +124,23 @@ export const getLatestPosts = async () => {
   }
 };
 
+//Fonction search
+export const searchPosts = async (query: string) => {
+  try {
+    const posts = await databases.listDocuments(
+      config.databaseId,
+      config.postCollectionId,
+      [Query.search('title', query)]
+    );
+
+    if (!posts.documents.length) throw new Error('No posts found');
+    return posts.documents;
+  } catch (error) {
+    console.error('Error fetching search posts:', error);
+    throw error;
+  }
+};
+
 // Suppression d'un fichier et d'un document associés
 // Type for Post document
 
