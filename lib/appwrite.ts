@@ -6,7 +6,10 @@ import {
   Databases,
   Storage,
   Query,
+  OAuthProvider,
 } from 'react-native-appwrite';
+import * as Linking from 'expo-linking';
+import { openAuthSessionAsync } from 'expo-web-browser';
 
 export const config = {
   platform: 'com.sima.greenworld',
@@ -75,6 +78,36 @@ export const signIn = async (email: string, password: string) => {
   }
 };
 
+export const authGoogle = async () => {
+  try {
+    const redirectUri = Linking.createURL('/');
+
+    const resp = await openAuthSessionAsync(OAuthProvider.Google, redirectUri);
+    if (!resp) throw new Error('No response from Google');
+
+    const browserResult = await openAuthSessionAsync(
+      resp.toString(),
+      redirectUri
+    );
+    if (browserResult.type !== 'success') {
+      throw new Error('Google auth failed');
+    }
+
+    const url = new URL(browserResult.url);
+    const secret = url.searchParams.get('secret')?.toString();
+    const userId = url.searchParams.get('userId')?.toString();
+    if (!secret || !userId) throw new Error(' Create OAuth2 token failed');
+
+    const session = await account.createSession(userId, secret);
+    if (!session) throw new Error('Failed to create session');
+
+    return true;
+  } catch (error) {
+    console.error('Error during Google auth:', error);
+    return false;
+  }
+};
+
 // Récupération de l'utilisateur actuel
 export const getCurrentUser = async () => {
   try {
@@ -127,17 +160,28 @@ export const getLatestPosts = async () => {
 //Fonction search
 export const searchPosts = async (query: string) => {
   try {
+    // Vérifiez la valeur de query
+    if (!query) {
+      console.log('Query is empty. Returning all posts.');
+      const posts = await databases.listDocuments(
+        config.databaseId,
+        config.postCollectionId
+      );
+      return posts.documents;
+    }
+
+    // Effectuez la recherche
     const posts = await databases.listDocuments(
       config.databaseId,
       config.postCollectionId,
       [Query.search('title', query)]
     );
 
-    if (!posts.documents.length) throw new Error('No posts found');
+    console.log('Search results:', posts.documents);
     return posts.documents;
   } catch (error) {
-    console.error('Error fetching search posts:', error);
-    throw error;
+    console.error('Error during search:', error);
+    return [];
   }
 };
 

@@ -2,9 +2,16 @@ import { View, Text, Image } from 'react-native';
 import React from 'react';
 import CustomButton from './CustomButton';
 import { icons } from '../constants/icons';
+import { authGoogle } from '@/lib/appwrite';
 
 const GoogleAuth = () => {
-  const handleGoogleSignIn = async () => {};
+  const handleGoogleSignIn = async () => {
+    try {
+      await authGoogle();
+    } catch (error) {
+      console.error('Google Sign In Error:', error);
+    }
+  };
 
   return (
     <View>

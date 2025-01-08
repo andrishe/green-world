@@ -1,7 +1,12 @@
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, CircleChevronLeft, FileWarning } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  CircleChevronLeft,
+  FileSearch,
+  FileWarning,
+} from 'lucide-react-native';
 import { useLocalSearchParams } from 'expo-router';
 import useFetchData from '@/hooks/useFetchData';
 import Card from '@/components/Card';
@@ -44,8 +49,10 @@ const SearchQuery = () => {
           <View className="my-6 px-4">
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-base font-RobotoRegular text-grayBlack">
-                {posts.length <= 1
-                  ? `${posts.length} Résultat trouvé`
+                {posts.length === 0
+                  ? 'Aucun résultat trouvé'
+                  : posts.length === 1
+                  ? '1 Résultat trouvé'
                   : `${posts.length} Résultats trouvés`}
               </Text>
 
@@ -60,16 +67,16 @@ const SearchQuery = () => {
                 placeholder="Recherche de signalement"
                 onChangeText={() => {}}
                 otherStyles=""
-                initialQuery=""
+                initialQuery={query as string}
               />
             </View>
           </View>
         )}
         ListEmptyComponent={() => (
           <View className="flex-col items-center justify-center mt-8">
-            <FileWarning size={64} color="#455a64" />
+            <FileSearch size={64} color="#455a64" />
             <Text className="text-lg font-RobotoRegular text-grayBlack mt-4">
-              Aucun résultat trouvé
+              Aucun résultat trouvé pour {query}.
             </Text>
           </View>
         )}
